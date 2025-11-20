@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fallback / Custom Utilities if Tailwind Config fails */
+:root {
+  --discord-dark: #36393f;
+  --discord-darker: #2f3136;
+  --discord-darkest: #202225;
+  --discord-light: #40444b;
+  --discord-brand: #5865f2;
+  --discord-green: #3ba55c;
+  --discord-red: #ed4245;
+  --discord-gray: #b9bbbe;
+  --discord-timestamp: #72767d;
+  --discord-text-normal: #dcddde;
+  --discord-text-muted: #72767d;
+  --discord-divider: #202225;
+  --discord-hover: #32353b;
+}
+
+body {
+  background-color: var(--discord-dark);
+  color: white;
+  font-family: 'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+/* Manual Utility Classes to ensure they exist */
+.bg-discord-dark {
+  background-color: var(--discord-dark) !important;
+}
+
+.bg-discord-darker {
+  background-color: var(--discord-darker) !important;
+}
+
+.bg-discord-darkest {
+  background-color: var(--discord-darkest) !important;
+}
+
+.bg-discord-light {
+  background-color: var(--discord-light) !important;
+}
+
+.bg-discord-brand {
+  background-color: var(--discord-brand) !important;
+}
+
+.bg-discord-green {
+  background-color: var(--discord-green) !important;
+}
+
+.bg-discord-red {
+  background-color: var(--discord-red) !important;
+}
+
+.text-discord-text-normal {
+  color: var(--discord-text-normal) !important;
+}
+
+.text-discord-text-muted {
+  color: var(--discord-text-muted) !important;
+}
+
+.border-discord-darkest {
+  border-color: var(--discord-darkest) !important;
+}
+
+.border-discord-divider {
+  border-color: var(--discord-divider) !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #2f3136;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #202225;
+  border-radius: 4px;
+}
