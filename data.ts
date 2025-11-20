@@ -4,7 +4,7 @@ const currentUser: User = {
   id: 'me',
   username: 'FrontendWizard',
   discriminator: '8821',
-  avatar: 'https://picsum.photos/id/64/200/200',
+  avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=FrontendWizard',
   status: 'online',
   color: '#5865F2', // Brand color
   bannerColor: '#2c2f33',
@@ -14,69 +14,69 @@ const currentUser: User = {
 
 const users: Record<string, User> = {
   'me': currentUser,
-  'u1': { 
-      id: 'u1', 
-      username: 'Clyde', 
-      discriminator: '0000', 
-      bot: true, 
-      avatar: 'https://cdn.discordapp.com/avatars/1081004946872352958/a_6d52d47786a3f2f6030453f034753479.png', 
-      status: 'online', 
-      color: '#5865F2',
-      bannerColor: '#5865F2',
-      aboutMe: 'I am a robot. Beep boop.',
-      roles: ['Bot', 'System'],
-      personality: 'You are Clyde, the helpful Discord system bot. You are polite, slightly robotic but friendly. You try to help users with technical questions. You use emojis like 🤖 and ✨.'
-  }, 
-  'u2': { 
-      id: 'u2', 
-      username: 'Nelly', 
-      discriminator: '1234', 
-      avatar: 'https://picsum.photos/id/65/200/200', 
-      status: 'idle', 
-      activity: 'Visual Studio Code', 
-      color: '#E91E63',
-      bannerColor: '#880e4f',
-      aboutMe: 'Full stack developer | Coffee enthusiast',
-      roles: ['Moderator', 'Senior Dev'],
-      personality: 'You are Nelly, a full-stack developer who is obsessed with coffee. You are helpful but always mention caffeine or coffee in some way. You are chill and use lowercase mostly.'
+  'u1': {
+    id: 'u1',
+    username: 'Clyde',
+    discriminator: '0000',
+    bot: true,
+    avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Clyde',
+    status: 'online',
+    color: '#5865F2',
+    bannerColor: '#5865F2',
+    aboutMe: 'I am a robot. Beep boop.',
+    roles: ['Bot', 'System'],
+    personality: 'You are Clyde, the helpful Discord system bot. You are polite, slightly robotic but friendly. You try to help users with technical questions. You use emojis like 🤖 and ✨.'
   },
-  'u3': { 
-      id: 'u3', 
-      username: 'SeniorDev', 
-      discriminator: '9999', 
-      avatar: 'https://picsum.photos/id/66/200/200', 
-      status: 'dnd', 
-      activity: 'Reviewing PRs', 
-      color: '#F1C40F',
-      bannerColor: '#f39c12',
-      aboutMe: 'Don\'t merge without tests.',
-      roles: ['Lead', 'Mentor'],
-      personality: 'You are a grumpy Senior Developer. You are very strict about code quality, linting, and testing. You often complain about junior developers breaking production. You are knowledgeable but terse.'
+  'u2': {
+    id: 'u2',
+    username: 'Nelly',
+    discriminator: '1234',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Nelly',
+    status: 'idle',
+    activity: 'Visual Studio Code',
+    color: '#E91E63',
+    bannerColor: '#880e4f',
+    aboutMe: 'Full stack developer | Coffee enthusiast',
+    roles: ['Moderator', 'Senior Dev'],
+    personality: 'You are Nelly, a full-stack developer who is obsessed with coffee. You are helpful but always mention caffeine or coffee in some way. You are chill and use lowercase mostly.'
   },
-  'u4': { 
-      id: 'u4', 
-      username: 'DesignGuru', 
-      discriminator: '5555', 
-      avatar: 'https://picsum.photos/id/67/200/200', 
-      status: 'offline', 
-      color: '#2ECC71',
-      bannerColor: '#27ae60',
-      aboutMe: 'Pixels are my life.',
-      roles: ['Designer'],
-      personality: 'You are an artistic UI/UX designer. You care deeply about aesthetics, color palettes, and spacing. You use artistic emojis. You speak in a flowery, creative way.'
+  'u3': {
+    id: 'u3',
+    username: 'SeniorDev',
+    discriminator: '9999',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SeniorDev',
+    status: 'dnd',
+    activity: 'Reviewing PRs',
+    color: '#F1C40F',
+    bannerColor: '#f39c12',
+    aboutMe: 'Don\'t merge without tests.',
+    roles: ['Lead', 'Mentor'],
+    personality: 'You are a grumpy Senior Developer. You are very strict about code quality, linting, and testing. You often complain about junior developers breaking production. You are knowledgeable but terse.'
   },
-  'u5': { 
-      id: 'u5', 
-      username: 'GamerX', 
-      discriminator: '4242', 
-      avatar: 'https://picsum.photos/id/68/200/200', 
-      status: 'online', 
-      activity: 'Playing Overwatch 2', 
-      color: '#95A5A6',
-      bannerColor: '#7f8c8d',
-      aboutMe: 'LFG | Tank Main',
-      roles: ['Member'],
-      personality: 'You are a hardcore gamer. You use internet slang like "pog", "no cap", "fr", "gg". You are energetic and competitive. You mostly talk about games.'
+  'u4': {
+    id: 'u4',
+    username: 'DesignGuru',
+    discriminator: '5555',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=DesignGuru',
+    status: 'offline',
+    color: '#2ECC71',
+    bannerColor: '#27ae60',
+    aboutMe: 'Pixels are my life.',
+    roles: ['Designer'],
+    personality: 'You are an artistic UI/UX designer. You care deeply about aesthetics, color palettes, and spacing. You use artistic emojis. You speak in a flowery, creative way.'
+  },
+  'u5': {
+    id: 'u5',
+    username: 'GamerX',
+    discriminator: '4242',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=GamerX',
+    status: 'online',
+    activity: 'Playing Overwatch 2',
+    color: '#95A5A6',
+    bannerColor: '#7f8c8d',
+    aboutMe: 'LFG | Tank Main',
+    roles: ['Member'],
+    personality: 'You are a hardcore gamer. You use internet slang like "pog", "no cap", "fr", "gg". You are energetic and competitive. You mostly talk about games.'
   },
 };
 
@@ -98,7 +98,7 @@ const servers: Server[] = [
   {
     id: 's1',
     name: 'React Developers',
-    icon: 'https://picsum.photos/id/180/200/200',
+    icon: 'https://api.dicebear.com/7.x/initials/svg?seed=RD&backgroundColor=5865F2',
     members: ['me', 'u1', 'u2', 'u3', 'u4', 'u5'],
     categories: [
       { id: 'cat1', name: 'Information', channelIds: ['c1', 'c3'] },
@@ -117,7 +117,7 @@ const servers: Server[] = [
   {
     id: 's2',
     name: 'Gemini API Enthusiasts',
-    icon: 'https://picsum.photos/id/20/200/200',
+    icon: 'https://api.dicebear.com/7.x/initials/svg?seed=GA&backgroundColor=F1C40F',
     members: ['me', 'u1', 'u3'],
     categories: [
       { id: 'cat4', name: 'Text Channels', channelIds: ['c5', 'c6'] }
