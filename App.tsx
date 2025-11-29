@@ -35,6 +35,17 @@ function App() {
         stateRef.current = state;
     }, [state]);
 
+    // Apply Theme & Accent Color
+    useEffect(() => {
+        // Theme Logic
+        const root = document.documentElement;
+        root.classList.remove('theme-dark', 'theme-light', 'theme-midnight');
+        root.classList.add(`theme-${state.theme}`);
+
+        // Accent Color Logic
+        root.style.setProperty('--discord-brand', state.accentColor);
+    }, [state.theme, state.accentColor]);
+
     const activeServer = state.servers.find(s => s.id === state.activeServerId);
     const activeChannel = activeServer?.channels.find(c => c.id === state.activeChannelId);
 
@@ -435,7 +446,14 @@ function App() {
 
             {/* Modals and Overlays */}
             {isSettingsOpen && (
-                <SettingsModal user={state.currentUser} onClose={() => setIsSettingsOpen(false)} />
+                <SettingsModal
+                    user={state.currentUser}
+                    theme={state.theme}
+                    accentColor={state.accentColor}
+                    onClose={() => setIsSettingsOpen(false)}
+                    onUpdateTheme={(theme) => setState(prev => ({ ...prev, theme }))}
+                    onUpdateAccentColor={(accentColor) => setState(prev => ({ ...prev, accentColor }))}
+                />
             )}
 
             <QuickSwitcher

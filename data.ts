@@ -138,5 +138,7 @@ export const initialData: AppState = {
   activeServerId: 's1',
   activeChannelId: 'c1',
   connectedVoiceChannelId: null,
-  currentUser
+  currentUser,
+  theme: 'dark',
+  accentColor: '#5865F2'
 };

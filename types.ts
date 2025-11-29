@@ -56,4 +56,6 @@ export interface AppState {
   activeChannelId: string;
   connectedVoiceChannelId?: string | null; // New: Track voice connection
   currentUser: User;
+  theme: 'dark' | 'light' | 'midnight';
+  accentColor: string;
 }

@@ -4,6 +4,7 @@
 
 /* Fallback / Custom Utilities if Tailwind Config fails */
 :root {
+  /* Default (Dark) */
   --discord-dark: #36393f;
   --discord-darker: #2f3136;
   --discord-darkest: #202225;
@@ -19,10 +20,36 @@
   --discord-hover: #32353b;
 }
 
+/* Light Theme */
+.theme-light {
+  --discord-dark: #ffffff;
+  --discord-darker: #f2f3f5;
+  --discord-darkest: #ebedef;
+  --discord-light: #e3e5e8;
+  --discord-text-normal: #060607;
+  --discord-text-muted: #4f5660;
+  --discord-divider: #e3e5e8;
+  --discord-hover: #f2f3f5;
+  --discord-timestamp: #5c5e66;
+}
+
+/* Midnight (AMOLED) Theme */
+.theme-midnight {
+  --discord-dark: #000000;
+  --discord-darker: #000000;
+  --discord-darkest: #000000;
+  --discord-light: #121212;
+  --discord-text-normal: #e0e0e0;
+  --discord-text-muted: #a0a0a0;
+  --discord-divider: #1f1f1f;
+  --discord-hover: #1a1a1a;
+}
+
 body {
   background-color: var(--discord-dark);
-  color: white;
+  color: var(--discord-text-normal);
   font-family: 'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Manual Utility Classes to ensure they exist */

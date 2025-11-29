@@ -113,7 +113,7 @@ const UserControls = ({ user, onOpenSettings, onStatusChange }: { user: User, on
     const [showStatusMenu, setShowStatusMenu] = useState(false);
 
     return (
-        <div className="h-[52px] bg-[#292b2f] flex items-center px-2 shrink-0 relative">
+        <div className="h-[52px] bg-discord-darkest flex items-center px-2 shrink-0 relative">
             {/* Status Menu Popup */}
             {showStatusMenu && (
                 <div className="absolute bottom-14 left-2 w-[200px] bg-discord-darkest rounded-lg shadow-xl p-2 z-50 border border-discord-dark">
@@ -159,7 +159,7 @@ const UserControls = ({ user, onOpenSettings, onStatusChange }: { user: User, on
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-600">
                     <img src={user.avatar} alt={user.username} className="w-full h-full object-cover"/>
                 </div>
-                <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-[3px] border-[#292b2f]
+                <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-[3px] border-discord-darkest
                     ${user.status === 'online' ? 'bg-discord-green' : 
                     user.status === 'idle' ? 'bg-yellow-500' :
                     user.status === 'dnd' ? 'bg-discord-red' : 'bg-gray-500'}
