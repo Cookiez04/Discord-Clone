@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Channel, Message, User, Server } from '../types';
-import { Hash, Bell, Pin, Users, Search, PlusCircle, Gift, Sticker, Smile, HelpCircle, Inbox, MessageSquare, Trash2, Edit2, Reply, X, Command, AtSign, Volume2, Mic, Upload } from 'lucide-react';
+import { Hash, Bell, Pin, Users, Search, PlusCircle, Gift, Sticker, Smile, HelpCircle, Inbox, MessageSquare, Trash2, Edit2, Reply, X, Command, AtSign, Volume2, Mic, Upload, Menu, ArrowLeft } from 'lucide-react';
 import { renderMarkdown } from '../utils/markdown';
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import confetti from 'canvas-confetti';
@@ -23,6 +23,7 @@ interface Props {
     toggleMemberList: () => void;
     showMemberList: boolean;
     onUserClick: (e: React.MouseEvent, user: User) => void;
+    onMobileMenuClick: () => void;
 }
 
 const MessageItem: React.FC<{
@@ -390,13 +391,15 @@ const TypingIndicator: React.FC<{ users: User[] }> = ({ users }) => {
     );
 };
 
-export const ChatArea: React.FC<Props> = ({ channel, server, messages, users, typingUsers, onSendMessage, onDeleteMessage, onEditMessage, onAddReaction, onVotePoll, onPinMessage, toggleMemberList, showMemberList, onUserClick }) => {
+export const ChatArea: React.FC<Props> = ({ channel, server, messages, users, typingUsers, onSendMessage, onDeleteMessage, onEditMessage, onAddReaction, onVotePoll, onPinMessage, toggleMemberList, showMemberList, onUserClick, onMobileMenuClick }) => {
     const [inputValue, setInputValue] = useState('');
     const [replyingTo, setReplyingTo] = useState<Message | null>(null);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [showSoundboard, setShowSoundboard] = useState(false);
     const [showPinnedMessages, setShowPinnedMessages] = useState(false);
     const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+
+    const onlineCount = Object.values(users).filter(u => u.status !== 'offline').length;
 
     const onEmojiClick = (emojiData: EmojiClickData) => {
         setInputValue(prev => prev + emojiData.emoji);
@@ -633,8 +636,15 @@ export const ChatArea: React.FC<Props> = ({ channel, server, messages, users, ty
 
             {/* Header */}
             <div className="h-12 px-4 flex items-center shadow-sm border-b border-discord-darkest shrink-0 bg-discord-dark z-10">
+                <ArrowLeft className="text-discord-text-muted mr-4 md:hidden cursor-pointer hover:text-white" size={24} onClick={onMobileMenuClick} />
                 <Hash className="text-discord-text-muted mr-2" size={24} />
-                <h3 className="font-bold text-white mr-4 truncate">{channel.name}</h3>
+                <div className="flex flex-col min-w-0 mr-4">
+                    <h3 className="font-bold text-white truncate leading-tight">{channel.name}</h3>
+                    <div className="md:hidden flex items-center text-[10px] font-bold text-discord-text-muted">
+                         <div className="w-1.5 h-1.5 rounded-full bg-discord-green mr-1" />
+                         {onlineCount} Online
+                    </div>
+                </div>
                 {channel.categoryId && (
                     <div className="hidden md:block text-xs text-discord-text-muted truncate max-w-md border-l border-discord-text-muted/30 pl-4">
                         {channel.type === 'text' ? 'Time to chat!' : 'Hangout room'}
@@ -643,19 +653,19 @@ export const ChatArea: React.FC<Props> = ({ channel, server, messages, users, ty
 
                 <div className="ml-auto flex items-center space-x-3 text-discord-text-muted">
                     <MessageSquare className="hover:text-discord-text-normal cursor-pointer hidden sm:block" size={24} />
-                    <Bell className="hover:text-discord-text-normal cursor-pointer" size={24} />
+                    <Bell className="hover:text-discord-text-normal cursor-pointer hidden sm:block" size={24} />
                     <Pin 
-                        className={`hover:text-discord-text-normal cursor-pointer ${showPinnedMessages ? 'text-discord-text-normal' : ''}`} 
+                        className={`hover:text-discord-text-normal cursor-pointer hidden sm:block ${showPinnedMessages ? 'text-discord-text-normal' : ''}`} 
                         size={24} 
                         onClick={() => setShowPinnedMessages(!showPinnedMessages)}
                     />
                     <Users
-                        className={`cursor-pointer transition-colors ${showMemberList ? 'text-white' : 'hover:text-discord-text-normal'}`}
+                        className={`cursor-pointer transition-colors hidden sm:block ${showMemberList ? 'text-white' : 'hover:text-discord-text-normal'}`}
                         size={24}
                         onClick={toggleMemberList}
                     />
 
-                    <div className="bg-discord-darkest px-2 rounded flex items-center h-6 transition-all focus-within:w-48 w-36">
+                    <div className="hidden md:flex bg-discord-darkest px-2 rounded items-center h-6 transition-all focus-within:w-48 w-36">
                         <input
                             type="text"
                             placeholder="Search"
@@ -663,7 +673,10 @@ export const ChatArea: React.FC<Props> = ({ channel, server, messages, users, ty
                         />
                         <Search size={16} />
                     </div>
-                    <Inbox className="hover:text-discord-text-normal cursor-pointer" size={24} />
+                    {/* Mobile Search Icon */}
+                    <Search size={24} className="md:hidden hover:text-discord-text-normal cursor-pointer" />
+                    
+                    <Inbox className="hover:text-discord-text-normal cursor-pointer hidden sm:block" size={24} />
                     <HelpCircle className="hover:text-discord-text-normal cursor-pointer hidden sm:block" size={24} />
                 </div>
             </div>
@@ -773,57 +786,82 @@ export const ChatArea: React.FC<Props> = ({ channel, server, messages, users, ty
                         </div>
                     )}
 
+                    {/* Input Field */}
                     <div className="flex items-center p-2.5">
-                        <button className="text-discord-text-muted hover:text-discord-text-normal mr-3 sticky">
+                        <button className="text-discord-text-muted hover:text-discord-text-normal mr-3 sticky shrink-0">
                             <PlusCircle size={24} fill="currentColor" className="text-discord-text-muted hover:text-discord-text-normal" />
                         </button>
-                        <input
-                            type="text"
-                            className="bg-transparent flex-1 text-discord-text-normal placeholder-discord-text-muted/70 focus:outline-none font-normal"
-                            placeholder={`Message #${channel.name}`}
-                            value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            autoFocus
-                        />
-                        <div className="flex items-center space-x-3 ml-2 text-discord-text-muted">
-                        <Gift className="hover:text-discord-text-normal cursor-pointer" size={24} />
-                        <div className="relative">
-                            <Mic
-                                className={`hover:text-discord-text-normal cursor-pointer ${showSoundboard ? 'text-discord-text-normal' : ''}`}
-                                size={24}
-                                onClick={() => { setShowSoundboard(!showSoundboard); setShowEmojiPicker(false); }}
+                        
+                        {/* Mobile Gift Icon (Moved left) */}
+                        <div className="md:hidden mr-3 shrink-0">
+                             <Gift className="text-discord-text-muted hover:text-discord-text-normal cursor-pointer" size={24} />
+                        </div>
+
+                        <div className="flex-1 relative bg-discord-darker md:bg-transparent rounded-2xl md:rounded-none px-3 py-2 md:px-0 md:py-0 flex items-center">
+                            <input
+                                type="text"
+                                className="bg-transparent flex-1 text-discord-text-normal placeholder-discord-text-muted/70 focus:outline-none font-normal min-w-0"
+                                placeholder={`Message #${channel.name}`}
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                autoFocus
                             />
-                            {showSoundboard && (
-                                <SoundboardPanel
-                                    onClose={() => setShowSoundboard(false)}
-                                    onPlaySound={(id) => {
-                                        // Optional: Send a system message that a sound was played?
-                                        // For now just playing local audio is enough for "wowo"
-                                        console.log(`Played sound: ${id}`);
-                                    }}
+                             {/* Mobile Emoji Icon (Inside Input) */}
+                            <div className="md:hidden ml-2 shrink-0">
+                                <Smile
+                                    className={`text-discord-text-muted hover:text-discord-text-normal cursor-pointer ${showEmojiPicker ? 'text-discord-text-normal' : ''}`}
+                                    size={24}
+                                    onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowSoundboard(false); }}
                                 />
-                            )}
+                            </div>
                         </div>
-                        <Sticker className="hover:text-discord-text-normal cursor-pointer" size={24} />
-                        <div className="relative">
-                            <Smile
-                                className={`hover:text-discord-text-normal cursor-pointer ${showEmojiPicker ? 'text-discord-text-normal' : ''}`}
-                                size={24}
-                                onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowSoundboard(false); }}
-                            />
-                            {showEmojiPicker && (
-                                <div className="absolute bottom-10 right-0 z-50 shadow-2xl rounded-lg overflow-hidden">
-                                    <EmojiPicker
-                                        onEmojiClick={onEmojiClick}
-                                        theme={Theme.DARK}
-                                        width={350}
-                                        height={450}
+
+                        {/* Desktop Icons */}
+                        <div className="hidden md:flex items-center space-x-3 ml-2 text-discord-text-muted shrink-0">
+                            <Gift className="hover:text-discord-text-normal cursor-pointer" size={24} />
+                            <div className="relative">
+                                <Mic
+                                    className={`hover:text-discord-text-normal cursor-pointer ${showSoundboard ? 'text-discord-text-normal' : ''}`}
+                                    size={24}
+                                    onClick={() => { setShowSoundboard(!showSoundboard); setShowEmojiPicker(false); }}
+                                />
+                                {showSoundboard && (
+                                    <SoundboardPanel
+                                        onClose={() => setShowSoundboard(false)}
+                                        onPlaySound={(id) => {
+                                            console.log(`Played sound: ${id}`);
+                                        }}
                                     />
-                                </div>
-                            )}
+                                )}
+                            </div>
+                            <Sticker className="hover:text-discord-text-normal cursor-pointer" size={24} />
+                            <div className="relative">
+                                <Smile
+                                    className={`hover:text-discord-text-normal cursor-pointer ${showEmojiPicker ? 'text-discord-text-normal' : ''}`}
+                                    size={24}
+                                    onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowSoundboard(false); }}
+                                />
+                                {showEmojiPicker && (
+                                    <div className="absolute bottom-10 right-0 z-50 shadow-2xl rounded-lg overflow-hidden">
+                                        <EmojiPicker
+                                            onEmojiClick={onEmojiClick}
+                                            theme={Theme.DARK}
+                                            width={350}
+                                            height={450}
+                                        />
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </div>
+
+                        {/* Mobile Mic Icon (Outside Input) */}
+                        <div className="md:hidden ml-3 shrink-0">
+                            <div className="bg-discord-darker rounded-full p-2">
+                                <Mic className="text-white cursor-pointer" size={20} />
+                            </div>
+                        </div>
+
                     </div>
                 </div>
                 <TypingIndicator users={typingUsers} />

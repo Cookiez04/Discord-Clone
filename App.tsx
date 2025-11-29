@@ -22,6 +22,7 @@ function App() {
     const [showMemberList, setShowMemberList] = useState(true);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isQuickSwitcherOpen, setIsQuickSwitcherOpen] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [typingUsers, setTypingUsers] = useState<User[]>([]);
     const [popoutState, setPopoutState] = useState<{ visible: boolean; user: User | null; x: number; y: number }>({
         visible: false,
@@ -612,57 +613,79 @@ function App() {
                 />
             )}
 
-            {/* Left Sidebar (Servers) */}
-            <ServerSidebar
-                servers={state.servers}
-                activeServerId={state.activeServerId}
-                onServerClick={handleServerClick}
-            />
-
-            {/* Secondary Sidebar (Channels) */}
-            {activeServer && (
-                <ChannelSidebar
-                    server={activeServer}
-                    activeChannelId={state.activeChannelId}
-                    connectedVoiceChannelId={state.connectedVoiceChannelId}
-                    onChannelClick={handleChannelClick}
-                    onDisconnectVoice={handleDisconnectVoice}
-                    currentUser={state.currentUser}
-                    onOpenSettings={() => setIsSettingsOpen(true)}
-                    onStatusChange={handleStatusChange}
+            {/* Mobile Overlay */}
+            {isMobileMenuOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/50 z-40 md:hidden" 
+                    onClick={() => setIsMobileMenuOpen(false)}
                 />
             )}
+
+            {/* Sidebar Wrapper (Servers + Channels) */}
+            <div className={`
+                fixed inset-y-0 left-0 z-50 flex h-full transition-transform duration-300 md:relative md:translate-x-0
+                ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+            `}>
+                <ServerSidebar
+                    servers={state.servers}
+                    activeServerId={state.activeServerId}
+                    onServerClick={handleServerClick}
+                />
+
+                {activeServer && (
+                    <ChannelSidebar
+                        server={activeServer}
+                        activeChannelId={state.activeChannelId}
+                        connectedVoiceChannelId={state.connectedVoiceChannelId}
+                        onChannelClick={(id, type) => {
+                            handleChannelClick(id, type);
+                            setIsMobileMenuOpen(false);
+                        }}
+                        onDisconnectVoice={handleDisconnectVoice}
+                        currentUser={state.currentUser}
+                        onOpenSettings={() => setIsSettingsOpen(true)}
+                        onStatusChange={handleStatusChange}
+                    />
+                )}
+            </div>
 
             {/* Main Chat Area */}
-            {activeChannel && activeServer && (
-                <ChatArea
-                    channel={activeChannel}
-                    server={activeServer}
-                    messages={state.messages[activeChannel.id] || []}
-                    users={state.users}
-                    typingUsers={typingUsers}
-                    onSendMessage={handleSendMessage}
-                    onDeleteMessage={handleDeleteMessage}
-                    onEditMessage={handleEditMessage}
-                    onAddReaction={handleAddReaction}
-                    onVotePoll={handleVotePoll}
-                    onPinMessage={handlePinMessage}
-                    toggleMemberList={() => setShowMemberList(!showMemberList)}
-                    showMemberList={showMemberList}
-                    onUserClick={handleUserClick}
-                />
-            )}
-
-            {/* Right Sidebar (Members) - Hidden on small screens */}
-            {showMemberList && activeServer && (
-                <div className="hidden lg:flex border-l border-discord-darkest h-full">
-                    <MemberSidebar
+            <div className="flex-1 flex min-w-0 overflow-hidden">
+                {activeChannel && activeServer ? (
+                    <ChatArea
+                        channel={activeChannel}
                         server={activeServer}
+                        messages={state.messages[activeChannel.id] || []}
                         users={state.users}
+                        typingUsers={typingUsers}
+                        onSendMessage={handleSendMessage}
+                        onDeleteMessage={handleDeleteMessage}
+                        onEditMessage={handleEditMessage}
+                        onAddReaction={handleAddReaction}
+                        onVotePoll={handleVotePoll}
+                        onPinMessage={handlePinMessage}
+                        toggleMemberList={() => setShowMemberList(!showMemberList)}
+                        showMemberList={showMemberList}
                         onUserClick={handleUserClick}
+                        onMobileMenuClick={() => setIsMobileMenuOpen(true)}
                     />
-                </div>
-            )}
+                ) : (
+                    <div className="flex-1 flex items-center justify-center text-discord-text-muted">
+                        Select a channel to start chatting
+                    </div>
+                )}
+
+                {/* Right Sidebar (Members) - Hidden on small screens */}
+                {showMemberList && activeServer && (
+                    <div className="hidden lg:flex border-l border-discord-darkest h-full shrink-0">
+                        <MemberSidebar
+                            server={activeServer}
+                            users={state.users}
+                            onUserClick={handleUserClick}
+                        />
+                    </div>
+                )}
+            </div>
 
         </div>
     );
