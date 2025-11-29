@@ -6,12 +6,10 @@ import { MemberSidebar } from './components/MemberSidebar';
 import { SettingsModal } from './components/SettingsModal';
 import { UserPopout } from './components/UserPopout';
 import { QuickSwitcher } from './components/QuickSwitcher';
+import { generateId } from './utils/ids';
 import { initialData } from './data';
 import { AppState, User, Message } from './types';
 import { GoogleGenAI, HarmCategory, HarmBlockThreshold } from "@google/genai";
-
-// Helper ID generator
-const generateId = () => Math.random().toString(36).substr(2, 9);
 
 // Helper to escape regex characters
 function escapeRegExp(string: string) {
@@ -25,8 +23,11 @@ function App() {
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isQuickSwitcherOpen, setIsQuickSwitcherOpen] = useState(false);
     const [typingUsers, setTypingUsers] = useState<User[]>([]);
-    const [popoutState, setPopoutState] = useState<{ visible: boolean, x: number, y: number, user: User | null }>({
-        visible: false, x: 0, y: 0, user: null
+    const [popoutState, setPopoutState] = useState<{ visible: boolean; user: User | null; x: number; y: number }>({
+        visible: false,
+        user: null,
+        x: 0,
+        y: 0
     });
 
     // Refs for accessing latest state in async callbacks
@@ -463,13 +464,13 @@ function App() {
     }, [state.activeChannelId]);
 
     const handleUserClick = (e: React.MouseEvent, user: User) => {
+        e.preventDefault();
         e.stopPropagation();
-        // Simple positioning
         setPopoutState({
             visible: true,
-            x: e.clientX + 20,
-            y: e.clientY - 50,
-            user
+            user,
+            x: e.clientX,
+            y: e.clientY
         });
     };
 
@@ -595,12 +596,16 @@ function App() {
                 isOpen={isQuickSwitcherOpen}
                 onClose={() => setIsQuickSwitcherOpen(false)}
                 servers={state.servers}
-                onSelectChannel={handleQuickSwitch}
+                onSelectChannel={(serverId, channelId) => {
+                    handleQuickSwitch(serverId, channelId);
+                    setIsQuickSwitcherOpen(false);
+                }}
             />
 
             {popoutState.visible && popoutState.user && (
                 <UserPopout
                     user={popoutState.user}
+                    currentUser={state.currentUser}
                     x={popoutState.x}
                     y={popoutState.y}
                     onClose={() => setPopoutState(prev => ({ ...prev, visible: false }))}
