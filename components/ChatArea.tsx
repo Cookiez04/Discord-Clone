@@ -17,6 +17,7 @@ interface Props {
     onEditMessage: (messageId: string, content: string) => void;
     onDeleteMessage: (messageId: string) => void;
     onAddReaction: (messageId: string, emoji: string) => void;
+    onVotePoll: (messageId: string, optionIndex: number) => void;
     toggleMemberList: () => void;
     showMemberList: boolean;
     onUserClick: (e: React.MouseEvent, user: User) => void;
@@ -33,6 +34,7 @@ const MessageItem: React.FC<{
     onReply: () => void;
     onReact: (emoji: string) => void;
     onEdit: (newContent: string) => void;
+    onVote: (optionIndex: number) => void;
     isCurrentUser: boolean;
     onUserClick: (e: React.MouseEvent, user: User) => void;
     onImageClick: (url: string) => void;
@@ -46,6 +48,7 @@ const MessageItem: React.FC<{
     onReply,
     onReact,
     onEdit,
+    onVote,
     isCurrentUser,
     onUserClick,
     onImageClick
@@ -207,6 +210,87 @@ const MessageItem: React.FC<{
                         </div>
                     )}
 
+                    {/* Poll Display */}
+                    {message.poll && (
+                        <div className="mt-2 max-w-md bg-discord-darker rounded p-3 border border-discord-darkest">
+                            <h4 className="font-bold text-white mb-2">{message.poll.question}</h4>
+                            <div className="space-y-2">
+                                {message.poll.options.map((option, idx) => {
+                                    const totalVotes = message.poll!.options.reduce((acc, opt) => acc + opt.votes, 0);
+                                    const percentage = totalVotes > 0 ? Math.round((option.votes / totalVotes) * 100) : 0;
+                                    const isVoted = option.voters.includes('me'); // Assuming 'me' is current user id for now
+
+                                    return (
+                                        <div 
+                                            key={idx}
+                                            className={`relative border rounded p-2 cursor-pointer transition-colors overflow-hidden group
+                                                ${isVoted ? 'border-discord-brand' : 'border-discord-darkest hover:border-discord-text-muted'}
+                                            `}
+                                            // Note: We need a prop to handle voting, for now just visual
+                                            onClick={() => onVote(idx)}
+                                        >
+                                            {/* Progress Bar Background */}
+                                            <div 
+                                                className={`absolute inset-0 opacity-20 transition-all duration-500 ${isVoted ? 'bg-discord-brand' : 'bg-discord-text-muted'}`} 
+                                                style={{ width: `${percentage}%` }}
+                                            />
+                                            
+                                            <div className="flex justify-between items-center relative z-10">
+                                                <span className="font-medium text-white">{option.text}</span>
+                                                <span className="text-xs text-discord-text-muted font-bold">{percentage}% ({option.votes})</span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Embed Display */}
+                    {message.embed && (
+                        <div className="mt-2 max-w-lg bg-discord-darker border-l-[4px] rounded-r p-4 grid gap-2" style={{ borderLeftColor: message.embed.color || '#202225' }}>
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    {message.embed.title && <h3 className="font-bold text-white mb-1">{message.embed.title}</h3>}
+                                    {message.embed.description && <p className="text-sm text-discord-text-normal whitespace-pre-wrap">{message.embed.description}</p>}
+                                </div>
+                                {message.embed.thumbnail && (
+                                    <img src={message.embed.thumbnail} alt="thumbnail" className="w-20 h-20 rounded object-cover ml-4" />
+                                )}
+                            </div>
+
+                            {message.embed.fields && (
+                                <div className="grid grid-cols-1 gap-2 mt-2">
+                                    {message.embed.fields.map((field, i) => (
+                                        <div key={i} className={field.inline ? 'inline-block mr-4' : ''}>
+                                            <div className="text-xs font-bold text-discord-text-muted mb-0.5">{field.name}</div>
+                                            <div className="text-sm text-discord-text-normal">{field.value}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {message.embed.image && (
+                                <div 
+                                    className="mt-3 rounded overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onImageClick(message.embed!.image!);
+                                    }}
+                                >
+                                    <img src={message.embed.image} alt="embed" className="w-full rounded" />
+                                </div>
+                            )}
+
+                            {message.embed.footer && (
+                                <div className="flex items-center mt-2 pt-2 border-t border-discord-darkest text-xs text-discord-text-muted">
+                                    {message.embed.footer.icon_url && <img src={message.embed.footer.icon_url} alt="" className="w-5 h-5 rounded-full mr-2" />}
+                                    <span>{message.embed.footer.text}</span>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     {/* Attachments */}
                     {message.attachment && (
                         <div 
@@ -299,7 +383,7 @@ const TypingIndicator: React.FC<{ users: User[] }> = ({ users }) => {
     );
 };
 
-export const ChatArea: React.FC<Props> = ({ channel, server, messages, users, typingUsers, onSendMessage, onDeleteMessage, onEditMessage, onAddReaction, toggleMemberList, showMemberList, onUserClick }) => {
+export const ChatArea: React.FC<Props> = ({ channel, server, messages, users, typingUsers, onSendMessage, onDeleteMessage, onEditMessage, onAddReaction, onVotePoll, toggleMemberList, showMemberList, onUserClick }) => {
     const [inputValue, setInputValue] = useState('');
     const [replyingTo, setReplyingTo] = useState<Message | null>(null);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -404,6 +488,20 @@ export const ChatArea: React.FC<Props> = ({ channel, server, messages, users, ty
                     const max = parseInt(lower.split(' ')[1]) || 100;
                     const result = Math.floor(Math.random() * max) + 1;
                     contentToSend = `_rolls a dice_ ... **${result}** (1-${max})`;
+                } else if (lower.startsWith('/poll')) {
+                    // Simple parser: /poll "Question" "Option1" "Option2"
+                    // Or just split by quotes
+                    const args = inputValue.match(/"([^"]+)"/g)?.map(s => s.replace(/"/g, ''));
+                    if (args && args.length >= 3) {
+                        // We need to send a special poll message.
+                        // But onSendMessage only takes string content.
+                        // We'll assume the App.tsx handles the /poll command parsing if it detects it?
+                        // OR we assume we can pass an object.
+                        // Let's pass the raw string and let App.tsx parse it, OR we hack it here.
+                        // Since we can't change App.tsx signature easily without breaking everything,
+                        // let's send the raw command string and handle it in App.tsx handleSendMessage.
+                        contentToSend = inputValue;
+                    }
                 }
 
                 onSendMessage(contentToSend, replyingTo?.id);
@@ -601,6 +699,7 @@ export const ChatArea: React.FC<Props> = ({ channel, server, messages, users, ty
                                     onReply={() => handleReply(msg)}
                                     onReact={(emoji) => onAddReaction(msg.id, emoji)}
                                     onEdit={(content) => onEditMessage(msg.id, content)}
+                                    onVote={(optIdx) => onVotePoll(msg.id, optIdx)}
                                     onUserClick={onUserClick}
                                     onImageClick={setLightboxSrc}
                                 />

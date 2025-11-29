@@ -248,13 +248,28 @@ function App() {
     const handleSendMessage = async (content: string, replyToId?: string) => {
         if (!state.activeChannelId) return;
 
-        const newMessage = {
+        let pollData = undefined;
+        // Poll Command Parsing
+        if (content.startsWith('/poll')) {
+            const args = content.match(/"([^"]+)"/g)?.map(s => s.replace(/"/g, ''));
+            if (args && args.length >= 3) {
+                pollData = {
+                    question: args[0],
+                    options: args.slice(1).map(opt => ({ text: opt, votes: 0, voters: [] }))
+                };
+                // Clean up content to not show the raw command
+                content = "📊 **Poll Started!**"; 
+            }
+        }
+
+        const newMessage: Message = {
             id: generateId(),
             userId: state.currentUser.id,
             content: content,
             timestamp: new Date().toISOString(),
             reactions: [],
-            replyToId
+            replyToId,
+            poll: pollData
         };
 
         // 1. Add User Message Immediately
@@ -441,6 +456,97 @@ function App() {
         }));
     };
 
+    const handleVotePoll = (messageId: string, optionIndex: number) => {
+        setState(prev => {
+            const activeChannelId = prev.activeChannelId;
+            if (!activeChannelId) return prev;
+
+            const channelMessages = prev.messages[activeChannelId] || [];
+            const newMessages = channelMessages.map(msg => {
+                if (msg.id === messageId && msg.poll) {
+                    // Check if user already voted for this option
+                    const option = msg.poll.options[optionIndex];
+                    const hasVoted = option.voters.includes(prev.currentUser.id);
+                    
+                    // Toggle vote
+                    let newVoters = hasVoted 
+                        ? option.voters.filter(id => id !== prev.currentUser.id)
+                        : [...option.voters, prev.currentUser.id];
+                    
+                    // Simulate Random Bot Votes (only if this is the first time the user votes on this poll)
+                    // We check if total votes are 0 (or just low) to trigger initial bot engagement
+                    const totalVotes = msg.poll.options.reduce((acc, o) => acc + o.votes, 0);
+                    let botVotesAdded = false;
+                    
+                    const newOptions = [...msg.poll.options];
+                    
+                    // If this is a fresh poll (or low engagement), let's add some bot chaos
+                    if (!hasVoted && totalVotes < 3) {
+                        const otherUsers = Object.keys(prev.users).filter(uid => uid !== 'me');
+                        
+                        otherUsers.forEach(botId => {
+                            // 30% chance for each bot to vote
+                            if (Math.random() > 0.7) {
+                                const randomOptionIndex = Math.floor(Math.random() * newOptions.length);
+                                // Don't vote if they already voted (simplified check, assuming bots vote once)
+                                // Actually, let's just add them to the random option
+                                const botOption = newOptions[randomOptionIndex];
+                                if (!botOption.voters.includes(botId)) {
+                                     // We need to update the option in the newOptions array
+                                     // But wait, we might be updating the SAME option as the user just voted for
+                                     // So we need to handle index carefully.
+                                     
+                                     // Let's do this: modify newOptions directly
+                                     // BUT, optionIndex (user's choice) is already being modified below.
+                                     // So we should do bot logic first? No, simpler to do it in a separate pass or just modify the array.
+                                     
+                                     // Let's just push to voters array of the target option
+                                     if (!newOptions[randomOptionIndex].voters) newOptions[randomOptionIndex].voters = [];
+                                     newOptions[randomOptionIndex].voters.push(botId);
+                                     newOptions[randomOptionIndex].votes += 1;
+                                     botVotesAdded = true;
+                                }
+                            }
+                        });
+                    }
+
+                    // Update User's Vote (Apply changes to the potentially modified newOptions)
+                    // We re-fetch the option from newOptions because it might have been mutated by bot logic above
+                    const targetOption = newOptions[optionIndex];
+                    // Ensure we don't double add if bot logic coincidentally added 'me' (it shouldn't)
+                    
+                    // Re-calculate user vote on the potentially modified option
+                    const userVoters = hasVoted 
+                         ? targetOption.voters.filter(id => id !== prev.currentUser.id)
+                         : [...targetOption.voters, prev.currentUser.id];
+
+                    newOptions[optionIndex] = {
+                        ...targetOption,
+                        voters: userVoters,
+                        votes: userVoters.length
+                    };
+
+                    return {
+                        ...msg,
+                        poll: {
+                            ...msg.poll,
+                            options: newOptions
+                        }
+                    };
+                }
+                return msg;
+            });
+
+            return {
+                ...prev,
+                messages: {
+                    ...prev.messages,
+                    [activeChannelId]: newMessages
+                }
+            };
+        });
+    };
+
     return (
         <div className="flex h-screen w-screen overflow-hidden bg-discord-dark text-white font-sans antialiased selection:bg-discord-brand selection:text-white">
 
@@ -505,6 +611,7 @@ function App() {
                     onDeleteMessage={handleDeleteMessage}
                     onEditMessage={handleEditMessage}
                     onAddReaction={handleAddReaction}
+                    onVotePoll={handleVotePoll}
                     toggleMemberList={() => setShowMemberList(!showMemberList)}
                     showMemberList={showMemberList}
                     onUserClick={handleUserClick}

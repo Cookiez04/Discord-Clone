@@ -13,6 +13,12 @@ export interface User {
   personality?: string; // AI Prompt instruction
 }
 
+export interface PollOption {
+  text: string;
+  votes: number;
+  voters: string[]; // User IDs
+}
+
 export interface Message {
   id: string;
   userId: string;
@@ -22,6 +28,19 @@ export interface Message {
   attachment?: { type: 'image'; url: string };
   replyToId?: string;
   edited?: boolean;
+  poll?: {
+    question: string;
+    options: PollOption[];
+  };
+  embed?: {
+    title: string;
+    description?: string;
+    color?: string;
+    image?: string;
+    thumbnail?: string;
+    fields?: { name: string; value: string; inline?: boolean }[];
+    footer?: { text: string; icon_url?: string };
+  };
 }
 
 export interface Channel {

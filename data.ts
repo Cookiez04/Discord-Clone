@@ -83,7 +83,19 @@ const users: Record<string, User> = {
 
 const initialMessages: Record<string, Message[]> = {
   'c1': [
-    { id: 'm1', userId: 'u1', content: 'INITIALIZING PROTOCOL... Welcome to Glitch City. 🏙️ Watch your back.', timestamp: new Date(Date.now() - 86400000).toISOString(), reactions: [{ emoji: '👁️', count: 5, me: true }] },
+    { id: 'm1', userId: 'u1', content: 'INITIALIZING PROTOCOL... Welcome to Glitch City. 🏙️ Watch your back.', timestamp: new Date(Date.now() - 86400000).toISOString(), reactions: [{ emoji: '👁️', count: 5, me: true }], 
+      embed: {
+        title: "System Rules v2.0",
+        description: "Welcome to the underground network. Follow protocol or be terminated.",
+        color: "#ff0055",
+        fields: [
+            { name: "Rule #1", value: "No snitching to corpos." },
+            { name: "Rule #2", value: "Respect the bandwidth." },
+            { name: "Rule #3", value: "Keep it preem." }
+        ],
+        footer: { text: "Automated by System_Override", icon_url: "https://api.dicebear.com/7.x/bottts/svg?seed=SystemOverride&backgroundColor=ff0055" }
+      } 
+    },
     { id: 'm2', userId: 'u2', content: 'Another day, another corp to hack. Anyone seen the new security protocols for Arasaka?', timestamp: new Date(Date.now() - 86000000).toISOString(), reactions: [] },
     { id: 'm3', userId: 'me', content: 'Just got connected. This place looks sick! 🔥', timestamp: new Date(Date.now() - 3600000).toISOString(), reactions: [{ emoji: '🔥', count: 1, me: false }] },
     { id: 'm4', userId: 'u3', content: 'Patience, young drifter. The network reveals itself to those who listen.', timestamp: new Date(Date.now() - 1800000).toISOString(), reactions: [] },
