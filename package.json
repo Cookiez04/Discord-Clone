@@ -1,5 +1,16 @@
 {
-  "name": "discord-clone",
+  "name": "kiezzcord",
+  "description": "KiezzCord is a feature-rich, cyberpunk-themed chat application and Discord clone built with React and TypeScript. Created by Cookiez04.",
+  "keywords": [
+    "react",
+    "typescript",
+    "discord-clone",
+    "chat-app",
+    "cyberpunk",
+    "portfolio",
+    "cookiez04",
+    "ai-chat"
+  ],
   "private": true,
   "version": "0.0.0",
   "type": "module",
