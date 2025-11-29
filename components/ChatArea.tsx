@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Channel, Message, User, Server } from '../types';
-import { Hash, Bell, Pin, Users, Search, PlusCircle, Gift, Sticker, Smile, HelpCircle, Inbox, MessageSquare, Trash2, Edit2, Reply, X, Command, AtSign, Volume2 } from 'lucide-react';
+import { Hash, Bell, Pin, Users, Search, PlusCircle, Gift, Sticker, Smile, HelpCircle, Inbox, MessageSquare, Trash2, Edit2, Reply, X, Command, AtSign, Volume2, Mic, Upload } from 'lucide-react';
 import { renderMarkdown } from '../utils/markdown';
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import confetti from 'canvas-confetti';
+import { SoundboardPanel } from './SoundboardPanel';
+import { Lightbox } from './Lightbox';
 
 interface Props {
     channel: Channel;
@@ -33,6 +35,7 @@ const MessageItem: React.FC<{
     onEdit: (newContent: string) => void;
     isCurrentUser: boolean;
     onUserClick: (e: React.MouseEvent, user: User) => void;
+    onImageClick: (url: string) => void;
 }> = ({
     message,
     user,
@@ -44,7 +47,8 @@ const MessageItem: React.FC<{
     onReact,
     onEdit,
     isCurrentUser,
-    onUserClick
+    onUserClick,
+    onImageClick
 }) => {
         const [isEditing, setIsEditing] = useState(false);
         const [editContent, setEditContent] = useState(message.content);
@@ -198,14 +202,20 @@ const MessageItem: React.FC<{
                         </div>
                     ) : (
                         <div className={`text-discord-text-normal whitespace-pre-wrap leading-[1.375rem] ${isConsecutive ? '' : 'mt-0.5'}`}>
-                            {renderMarkdown(message.content)}
+                            {renderMarkdown(message.content, onImageClick)}
                             {message.edited && <span className="text-[10px] text-discord-text-muted ml-1">(edited)</span>}
                         </div>
                     )}
 
                     {/* Attachments */}
                     {message.attachment && (
-                        <div className="mt-2 max-w-sm rounded-lg overflow-hidden cursor-pointer">
+                        <div 
+                            className="mt-2 max-w-sm rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onImageClick(message.attachment!.url);
+                            }}
+                        >
                             <img src={message.attachment.url} alt="attachment" className="rounded-lg" />
                         </div>
                     )}
@@ -293,6 +303,8 @@ export const ChatArea: React.FC<Props> = ({ channel, server, messages, users, ty
     const [inputValue, setInputValue] = useState('');
     const [replyingTo, setReplyingTo] = useState<Message | null>(null);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [showSoundboard, setShowSoundboard] = useState(false);
+    const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
     const onEmojiClick = (emojiData: EmojiClickData) => {
         setInputValue(prev => prev + emojiData.emoji);
@@ -406,8 +418,88 @@ export const ChatArea: React.FC<Props> = ({ channel, server, messages, users, ty
         setReplyingTo(msg);
     };
 
+    const [isDragging, setIsDragging] = useState(false);
+    const dragCounter = useRef(0);
+
+    const handleDragEnter = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounter.current++;
+        if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+            setIsDragging(true);
+        }
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounter.current--;
+        if (dragCounter.current === 0) {
+            setIsDragging(false);
+        }
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+        dragCounter.current = 0;
+
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            const file = e.dataTransfer.files[0];
+            if (file.type.startsWith('image/')) {
+                // Simulate upload by creating a local object URL
+                const imageUrl = URL.createObjectURL(file);
+                // In a real app, we would upload this to a server.
+                // Here we just send a message with the simulated URL attachment.
+                // We'll hack the onSendMessage to accept attachments or just append markdown.
+                // Since our Message type supports attachment, let's assume onSendMessage can handle it
+                // BUT, onSendMessage currently only takes string.
+                // Let's just append the image markdown for now or trigger a special message flow.
+                
+                // Better approach: Directly modify messages via a prop or extend onSendMessage.
+                // For this clone, let's pretend we uploaded it and send a message with the attachment.
+                // Since I can't change the App.tsx logic easily from here without changing the prop signature...
+                // I will format it as a markdown image for now, or we can update the interface later.
+                // Actually, I'll assume the user wants to send it immediately.
+                
+                // Let's use the "attachment" property of the message.
+                // Wait, onSendMessage only takes content.
+                // I'll send a message like "[Uploaded Image: filename]" and then immediately we can see it?
+                // No, that's lame.
+                
+                // Combined message for better UX
+                onSendMessage(`![${file.name}](${imageUrl})`, replyingTo?.id);
+                confetti({ particleCount: 50, spread: 50 });
+            }
+        }
+    };
+
     return (
-        <div className="flex-1 flex flex-col min-w-0 bg-discord-dark relative">
+        <div 
+            className="flex-1 flex flex-col min-w-0 bg-discord-dark relative"
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+        >
+            {/* Lightbox */}
+            {lightboxSrc && <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
+
+            {/* Drag Overlay */}
+            {isDragging && (
+                <div className="absolute inset-0 z-50 bg-discord-brand/80 flex flex-col items-center justify-center pointer-events-none animate-in fade-in duration-200 backdrop-blur-sm">
+                    <Upload size={64} className="text-white mb-4 animate-bounce" />
+                    <h2 className="text-2xl font-bold text-white">Drop to Upload!</h2>
+                    <p className="text-white/80">Release your mouse to send the file instantly.</p>
+                </div>
+            )}
+
             {/* Header */}
             <div className="h-12 px-4 flex items-center shadow-sm border-b border-discord-darkest shrink-0 bg-discord-dark z-10">
                 <Hash className="text-discord-text-muted mr-2" size={24} />
@@ -510,6 +602,7 @@ export const ChatArea: React.FC<Props> = ({ channel, server, messages, users, ty
                                     onReact={(emoji) => onAddReaction(msg.id, emoji)}
                                     onEdit={(content) => onEditMessage(msg.id, content)}
                                     onUserClick={onUserClick}
+                                    onImageClick={setLightboxSrc}
                                 />
                             </React.Fragment>
                         );
@@ -557,26 +650,43 @@ export const ChatArea: React.FC<Props> = ({ channel, server, messages, users, ty
                             autoFocus
                         />
                         <div className="flex items-center space-x-3 ml-2 text-discord-text-muted">
-                            <Gift className="hover:text-discord-text-normal cursor-pointer" size={24} />
-                            <Sticker className="hover:text-discord-text-normal cursor-pointer" size={24} />
-                            <div className="relative">
-                                <Smile
-                                    className={`hover:text-discord-text-normal cursor-pointer ${showEmojiPicker ? 'text-discord-text-normal' : ''}`}
-                                    size={24}
-                                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                        <Gift className="hover:text-discord-text-normal cursor-pointer" size={24} />
+                        <div className="relative">
+                            <Mic
+                                className={`hover:text-discord-text-normal cursor-pointer ${showSoundboard ? 'text-discord-text-normal' : ''}`}
+                                size={24}
+                                onClick={() => { setShowSoundboard(!showSoundboard); setShowEmojiPicker(false); }}
+                            />
+                            {showSoundboard && (
+                                <SoundboardPanel
+                                    onClose={() => setShowSoundboard(false)}
+                                    onPlaySound={(id) => {
+                                        // Optional: Send a system message that a sound was played?
+                                        // For now just playing local audio is enough for "wowo"
+                                        console.log(`Played sound: ${id}`);
+                                    }}
                                 />
-                                {showEmojiPicker && (
-                                    <div className="absolute bottom-10 right-0 z-50 shadow-2xl rounded-lg overflow-hidden">
-                                        <EmojiPicker
-                                            onEmojiClick={onEmojiClick}
-                                            theme={Theme.DARK}
-                                            width={350}
-                                            height={450}
-                                        />
-                                    </div>
-                                )}
-                            </div>
+                            )}
                         </div>
+                        <Sticker className="hover:text-discord-text-normal cursor-pointer" size={24} />
+                        <div className="relative">
+                            <Smile
+                                className={`hover:text-discord-text-normal cursor-pointer ${showEmojiPicker ? 'text-discord-text-normal' : ''}`}
+                                size={24}
+                                onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowSoundboard(false); }}
+                            />
+                            {showEmojiPicker && (
+                                <div className="absolute bottom-10 right-0 z-50 shadow-2xl rounded-lg overflow-hidden">
+                                    <EmojiPicker
+                                        onEmojiClick={onEmojiClick}
+                                        theme={Theme.DARK}
+                                        width={350}
+                                        height={450}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </div>
                     </div>
                 </div>
                 <TypingIndicator users={typingUsers} />

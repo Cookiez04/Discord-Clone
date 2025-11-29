@@ -1,11 +1,22 @@
 import React from 'react';
 import { User, Server } from '../types';
+import { Music, Gamepad2, Code, Monitor, Coffee } from 'lucide-react';
 
 interface Props {
   server: Server;
   users: Record<string, User>;
   onUserClick: (e: React.MouseEvent, user: User) => void;
 }
+
+const ActivityIcon: React.FC<{ activity: string }> = ({ activity }) => {
+    const lower = activity.toLowerCase();
+    if (lower.includes('spotify') || lower.includes('music') || lower.includes('listening')) return <Music size={12} className="mr-1" />;
+    if (lower.includes('play') || lower.includes('game') || lower.includes('overwatch') || lower.includes('minecraft')) return <Gamepad2 size={12} className="mr-1" />;
+    if (lower.includes('code') || lower.includes('visual studio') || lower.includes('compiling')) return <Code size={12} className="mr-1" />;
+    if (lower.includes('hack')) return <Monitor size={12} className="mr-1" />;
+    if (lower.includes('coffee')) return <Coffee size={12} className="mr-1" />;
+    return null;
+};
 
 const MemberItem: React.FC<{ user: User, onClick: (e: React.MouseEvent) => void }> = ({ user, onClick }) => (
   <div 
@@ -16,7 +27,7 @@ const MemberItem: React.FC<{ user: User, onClick: (e: React.MouseEvent) => void 
       <div className="w-8 h-8 rounded-full bg-gray-600 overflow-hidden">
         <img src={user.avatar} alt={user.username} className="w-full h-full object-cover opacity-100" />
       </div>
-      <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-[3px] border-[#2f3136]
+      <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-[3px] border-discord-darker
          ${user.status === 'online' ? 'bg-discord-green' : 
            user.status === 'idle' ? 'bg-yellow-500' :
            user.status === 'dnd' ? 'bg-discord-red' : 'bg-gray-500'}
@@ -35,8 +46,9 @@ const MemberItem: React.FC<{ user: User, onClick: (e: React.MouseEvent) => void 
           )}
       </div>
       {user.activity && (
-          <div className="text-xs text-discord-text-muted truncate">
-              {user.activity}
+          <div className="text-xs text-discord-text-muted truncate flex items-center mt-0.5">
+              <ActivityIcon activity={user.activity} />
+              <span className="truncate">{user.activity}</span>
           </div>
       )}
     </div>
