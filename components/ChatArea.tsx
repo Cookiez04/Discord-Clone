@@ -6,6 +6,7 @@ import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import confetti from 'canvas-confetti';
 import { SoundboardPanel } from './SoundboardPanel';
 import { Lightbox } from './Lightbox';
+import { PinnedMessages } from './PinnedMessages';
 
 interface Props {
     channel: Channel;
@@ -18,6 +19,7 @@ interface Props {
     onDeleteMessage: (messageId: string) => void;
     onAddReaction: (messageId: string, emoji: string) => void;
     onVotePoll: (messageId: string, optionIndex: number) => void;
+    onPinMessage: (messageId: string) => void;
     toggleMemberList: () => void;
     showMemberList: boolean;
     onUserClick: (e: React.MouseEvent, user: User) => void;
@@ -35,6 +37,7 @@ const MessageItem: React.FC<{
     onReact: (emoji: string) => void;
     onEdit: (newContent: string) => void;
     onVote: (optionIndex: number) => void;
+    onPin: () => void;
     isCurrentUser: boolean;
     onUserClick: (e: React.MouseEvent, user: User) => void;
     onImageClick: (url: string) => void;
@@ -49,6 +52,7 @@ const MessageItem: React.FC<{
     onReact,
     onEdit,
     onVote,
+    onPin,
     isCurrentUser,
     onUserClick,
     onImageClick
@@ -122,6 +126,9 @@ const MessageItem: React.FC<{
                         </button>
                         <button onClick={onReply} className="p-1 hover:bg-discord-light rounded text-discord-text-muted hover:text-discord-text-normal" title="Reply">
                             <Reply size={16} />
+                        </button>
+                        <button onClick={onPin} className={`p-1 hover:bg-discord-light rounded ${message.pinned ? 'text-discord-brand' : 'text-discord-text-muted'} hover:text-discord-text-normal`} title={message.pinned ? "Unpin Message" : "Pin Message"}>
+                            <Pin size={16} className={message.pinned ? "fill-current" : ""} />
                         </button>
                         {isCurrentUser && (
                             <button onClick={() => setIsEditing(true)} className="p-1 hover:bg-discord-light rounded text-discord-text-muted hover:text-discord-text-normal" title="Edit">
@@ -383,11 +390,12 @@ const TypingIndicator: React.FC<{ users: User[] }> = ({ users }) => {
     );
 };
 
-export const ChatArea: React.FC<Props> = ({ channel, server, messages, users, typingUsers, onSendMessage, onDeleteMessage, onEditMessage, onAddReaction, onVotePoll, toggleMemberList, showMemberList, onUserClick }) => {
+export const ChatArea: React.FC<Props> = ({ channel, server, messages, users, typingUsers, onSendMessage, onDeleteMessage, onEditMessage, onAddReaction, onVotePoll, onPinMessage, toggleMemberList, showMemberList, onUserClick }) => {
     const [inputValue, setInputValue] = useState('');
     const [replyingTo, setReplyingTo] = useState<Message | null>(null);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [showSoundboard, setShowSoundboard] = useState(false);
+    const [showPinnedMessages, setShowPinnedMessages] = useState(false);
     const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
     const onEmojiClick = (emojiData: EmojiClickData) => {
@@ -403,12 +411,26 @@ export const ChatArea: React.FC<Props> = ({ channel, server, messages, users, ty
     const [mentionIndex, setMentionIndex] = useState(0);
     const [mentionStartIndex, setMentionStartIndex] = useState(-1);
 
+    const messagesEndRef = useRef<HTMLDivElement>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
+    const scrollToMessage = (messageId: string) => {
+        // Ideally we would scroll to the message element
+        // For now just close the pinned panel
+        setShowPinnedMessages(false);
+        // We'd need refs to each message to scroll precisely, which is complex in this setup
+        // Let's just notify user
+        console.log("Jump to", messageId);
+    };
+
+    const scrollToBottom = () => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
+    };
+
+    useEffect(() => {
+        scrollToBottom();
     }, [messages.length, channel.id, typingUsers.length]);
 
     // Logic to detect @mentions
@@ -598,6 +620,17 @@ export const ChatArea: React.FC<Props> = ({ channel, server, messages, users, ty
                 </div>
             )}
 
+            {/* Pinned Messages Sidebar */}
+            {showPinnedMessages && (
+                <PinnedMessages
+                    messages={messages}
+                    users={users}
+                    onClose={() => setShowPinnedMessages(false)}
+                    onJumpToMessage={scrollToMessage}
+                    onUnpinMessage={onPinMessage}
+                />
+            )}
+
             {/* Header */}
             <div className="h-12 px-4 flex items-center shadow-sm border-b border-discord-darkest shrink-0 bg-discord-dark z-10">
                 <Hash className="text-discord-text-muted mr-2" size={24} />
@@ -611,7 +644,11 @@ export const ChatArea: React.FC<Props> = ({ channel, server, messages, users, ty
                 <div className="ml-auto flex items-center space-x-3 text-discord-text-muted">
                     <MessageSquare className="hover:text-discord-text-normal cursor-pointer hidden sm:block" size={24} />
                     <Bell className="hover:text-discord-text-normal cursor-pointer" size={24} />
-                    <Pin className="hover:text-discord-text-normal cursor-pointer" size={24} />
+                    <Pin 
+                        className={`hover:text-discord-text-normal cursor-pointer ${showPinnedMessages ? 'text-discord-text-normal' : ''}`} 
+                        size={24} 
+                        onClick={() => setShowPinnedMessages(!showPinnedMessages)}
+                    />
                     <Users
                         className={`cursor-pointer transition-colors ${showMemberList ? 'text-white' : 'hover:text-discord-text-normal'}`}
                         size={24}
@@ -700,6 +737,7 @@ export const ChatArea: React.FC<Props> = ({ channel, server, messages, users, ty
                                     onReact={(emoji) => onAddReaction(msg.id, emoji)}
                                     onEdit={(content) => onEditMessage(msg.id, content)}
                                     onVote={(optIdx) => onVotePoll(msg.id, optIdx)}
+                                    onPin={() => onPinMessage(msg.id)}
                                     onUserClick={onUserClick}
                                     onImageClick={setLightboxSrc}
                                 />

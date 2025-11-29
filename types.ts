@@ -28,6 +28,7 @@ export interface Message {
   attachment?: { type: 'image'; url: string };
   replyToId?: string;
   edited?: boolean;
+  pinned?: boolean;
   poll?: {
     question: string;
     options: PollOption[];

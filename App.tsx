@@ -49,17 +49,46 @@ function App() {
     const activeServer = state.servers.find(s => s.id === state.activeServerId);
     const activeChannel = activeServer?.channels.find(c => c.id === state.activeChannelId);
 
-    // Keyboard Shortcuts
+    // Global Keyboard Shortcuts
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+            // Quick Switcher: Ctrl + K
+            if (e.ctrlKey && e.key === 'k') {
                 e.preventDefault();
                 setIsQuickSwitcherOpen(prev => !prev);
+            }
+            // Escape to close modals
+            if (e.key === 'Escape') {
+                if (isQuickSwitcherOpen) setIsQuickSwitcherOpen(false);
+                if (isSettingsOpen) setIsSettingsOpen(false);
             }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []);
+    }, [isQuickSwitcherOpen, isSettingsOpen]);
+
+    const handlePinMessage = (messageId: string) => {
+        setState(prev => {
+            const activeChannelId = prev.activeChannelId;
+            if (!activeChannelId) return prev;
+
+            const channelMessages = prev.messages[activeChannelId] || [];
+            const newMessages = channelMessages.map(msg => {
+                if (msg.id === messageId) {
+                    return { ...msg, pinned: !msg.pinned };
+                }
+                return msg;
+            });
+
+            return {
+                ...prev,
+                messages: {
+                    ...prev.messages,
+                    [activeChannelId]: newMessages
+                }
+            };
+        });
+    };
 
     const handleServerClick = useCallback((serverId: string) => {
         const server = state.servers.find(s => s.id === serverId);
@@ -612,6 +641,7 @@ function App() {
                     onEditMessage={handleEditMessage}
                     onAddReaction={handleAddReaction}
                     onVotePoll={handleVotePoll}
+                    onPinMessage={handlePinMessage}
                     toggleMemberList={() => setShowMemberList(!showMemberList)}
                     showMemberList={showMemberList}
                     onUserClick={handleUserClick}
