@@ -1,6 +1,6 @@
 # KiezzCord 🚀
 
-**KiezzCord** is a feature-rich, modern chat application clone inspired by Discord, built with **React**, **TypeScript**, and **Tailwind CSS**. It features a Cyberpunk/Sci-Fi theme and a host of interactive "Ohh Wowo" features designed to delight users.
+**KiezzCord** is a feature-rich, modern chat application clone inspired by Discord, built with **React**, **TypeScript**, and **Tailwind CSS**. It features a Cyberpunk/Sci-Fi theme and a host of interactive features designed for users to have fun.
 
 ![KiezzCord Preview](screenshots/kiezzcord.vercel.app.png)
 
