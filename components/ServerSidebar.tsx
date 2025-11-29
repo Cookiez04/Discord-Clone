@@ -1,6 +1,6 @@
 import React from 'react';
 import { AppState, Server } from '../types';
-import { Plus, Compass, Download } from 'lucide-react';
+import { Plus, Compass, Download, Github } from 'lucide-react';
 
 interface Props {
   servers: Server[];
@@ -44,13 +44,15 @@ const ServerIcon: React.FC<{
 const ActionIcon = ({
   icon: Icon,
   color = "text-discord-green",
-  bgColor = "bg-discord-dark"
+  bgColor = "bg-discord-dark",
+  onClick
 }: {
   icon: React.ElementType,
   color?: string,
-  bgColor?: string
+  bgColor?: string,
+  onClick?: () => void
 }) => (
-  <div className="relative group w-full flex justify-center cursor-pointer group">
+  <div className="relative group w-full flex justify-center cursor-pointer group" onClick={onClick}>
     <div
       className={`absolute left-0 top-1/2 -translate-y-1/2 bg-white rounded-r-full transition-all duration-200 h-2 w-[4px] scale-0 group-hover:scale-100 group-hover:h-5`}
     />
@@ -88,6 +90,7 @@ export const ServerSidebar: React.FC<Props> = ({ servers, activeServerId, onServ
       <ActionIcon icon={Plus} />
       <ActionIcon icon={Compass} />
       <ActionIcon icon={Download} />
+      <ActionIcon icon={Github} color="text-white" onClick={() => window.open('https://github.com/Cookiez04', '_blank')} />
     </div>
   );
 };

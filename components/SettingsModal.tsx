@@ -179,7 +179,10 @@ export const SettingsModal: React.FC<Props> = ({ user, theme, accentColor, onClo
                     <SidebarItem label="Log Out" isRed={true} onClick={onClose} />
                     <div className="mt-4 text-xs text-discord-text-muted px-2">
                         Glitch City 2077 Client <br />
-                        Build 8821.99
+                        Build 8821.99 <br />
+                        <span className="block mt-2">
+                            Made by <a href="https://github.com/Cookiez04" target="_blank" rel="noopener noreferrer" className="text-discord-brand hover:underline">Cookiez04</a>
+                        </span>
                     </div>
                 </div>
             </div>
